@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/cwtofficial/skills/payments-integration/report-schema.json",
+  "$id": "https://github.com/cwtofficial/payments-integration-skill/skills/payments-integration/report-schema.json",
   "title": "Payments audit findings",
   "type": "object",
   "required": ["project", "summary", "money_paths", "findings"],

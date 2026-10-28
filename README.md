@@ -1,4 +1,4 @@
-# CWT Skills
+# Payments Integration Skill
 
 Agent skills from [Create With Tech](https://github.com/cwtofficial) for Claude Code and other agents that support the [Agent Skills](https://docs.claude.com/en/docs/agents-and-tools/agent-skills/overview) format.
 
@@ -12,8 +12,8 @@ Agent skills from [Create With Tech](https://github.com/cwtofficial) for Claude 
 
 **Claude Code (personal):**
 ```bash
-git clone https://github.com/cwtofficial/skills.git
-cp -r skills/skills/payments-integration ~/.claude/skills/
+git clone https://github.com/cwtofficial/payments-integration-skill.git
+cp -r payments-integration-skill/skills/payments-integration ~/.claude/skills/
 ```
 
 **Claude Code (one project):** copy the skill folder into `.claude/skills/` in the project.
