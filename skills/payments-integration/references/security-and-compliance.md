@@ -3,10 +3,10 @@
 ## Keys and secrets
 
 - Secret API keys and webhook secrets live in server environment/secret storage only. Publishable/public keys are the only keys that may reach the browser or mobile app.
-- Mobile apps: never ship a secret key in the app binary — it can be extracted. All secret-key calls go through your backend.
+- Mobile apps: never ship a secret key in the app binary: it can be extracted. All secret-key calls go through your backend.
 - Use restricted/limited keys where the provider supports them (Stripe restricted keys; scoped credentials elsewhere), especially for services that only need read access.
 - Rotate keys when people leave or a leak is suspected; know where each key is used so rotation does not cause an outage.
-- Don't log full request/response bodies from payment APIs without redaction — they may contain keys in headers, tokens, personal data, and sometimes card details. Redact `Authorization`, signature headers, and anything that looks like a PAN.
+- Don't log full request/response bodies from payment APIs without redaction: they may contain keys in headers, tokens, personal data, and sometimes card details. Redact `Authorization`, signature headers, and anything that looks like a PAN.
 - Check `.env` files are git-ignored and scan history if a key was ever committed (treat committed keys as leaked and rotate).
 
 ## PCI DSS scope

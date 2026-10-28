@@ -13,10 +13,10 @@
 | Adyen | `Idempotency-Key` header |
 | Square | `idempotency_key` body field (required on most create endpoints) |
 | Razorpay | Use your unique `receipt` on orders; check for an existing payout/refund by your reference before retrying; payouts API supports `X-Payout-Idempotency` |
-| Paystack | `reference` is unique per transaction/transfer — reuse the same reference when retrying a transfer, and the API rejects duplicates |
-| Flutterwave | `reference`/`tx_ref` unique per transfer/charge — same approach |
+| Paystack | `reference` is unique per transaction/transfer: reuse the same reference when retrying a transfer, and the API rejects duplicates |
+| Flutterwave | `reference`/`tx_ref` unique per transfer/charge: same approach |
 
-The key must be derived from *your* operation (e.g. `refund:{order_id}:{attempt}` or a UUID stored on the pending row before the call), not generated fresh on each retry — a fresh key defeats the purpose.
+The key must be derived from *your* operation (e.g. `refund:{order_id}:{attempt}` or a UUID stored on the pending row before the call), not generated fresh on each retry: a fresh key defeats the purpose.
 
 When the provider has no idempotency support and a call times out, the outcome is unknown. Do not retry blindly. Mark the operation `unknown`, query the provider by your reference, and only retry when you have confirmed it did not happen.
 
@@ -34,7 +34,7 @@ Writing the row *before* the call means a crash between steps 2 and 3 leaves a r
 
 ## Ledgers
 
-For any feature where users hold value — wallets, credits, marketplace seller balances, escrow, referral bonuses — use a ledger.
+For any feature where users hold value (wallets, credits, marketplace seller balances, escrow, referral bonuses), use a ledger.
 
 Minimal design (single-entry, per account):
 
@@ -66,7 +66,7 @@ UPDATE accounts SET balance_minor = balance_minor + $amount WHERE id = $account;
 COMMIT;
 ```
 
-Never `SET balance = <value computed in application code>` — that is a lost-update race. Periodically verify that cached balances equal ledger sums.
+Never `SET balance = <value computed in application code>`: that is a lost-update race. Periodically verify that cached balances equal ledger sums.
 
 ### Holds
 
@@ -78,13 +78,13 @@ The bug: two requests both read balance 1000, both check `1000 >= 800`, both wri
 
 Fixes, from simplest:
 
-1. **Conditional update** — the check and the write are one statement:
+1. **Conditional update**: the check and the write are one statement:
    ```sql
    UPDATE accounts SET balance_minor = balance_minor - $1
    WHERE id = $2 AND balance_minor >= $1
    RETURNING balance_minor;   -- no row returned → insufficient funds
    ```
-2. **Row lock** — `SELECT ... FROM accounts WHERE id = $1 FOR UPDATE` inside a transaction, then check and write.
+2. **Row lock**: `SELECT ... FROM accounts WHERE id = $1 FOR UPDATE` inside a transaction, then check and write.
 3. **Serializable isolation** with retry on serialization failure.
 4. **Single-writer queue** per account, for very high contention.
 

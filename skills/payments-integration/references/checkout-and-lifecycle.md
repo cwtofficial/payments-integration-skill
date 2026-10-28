@@ -26,16 +26,16 @@ Steps 1, 2, 4, and 5 belong to your server. Step 3 belongs to the customer and t
 
 - Generate the reference on your server and make it unique and unguessable (UUID or prefixed random ID). Store it on the order before calling the provider.
 - Pass it as the provider's reference/metadata field (`client_reference_id`/`metadata` on Stripe, `reference` on Paystack, `tx_ref` on Flutterwave, `receipt`/`notes` on Razorpay, `invoice_id`/`custom_id` on PayPal, `merchantReference` on Adyen, `external_reference` on Mercado Pago).
-- On verification, look the order up by the provider-returned reference, then check the payment really belongs to it. Do not look the order up by a user-supplied ID and then trust any successful payment the user points you at — that lets a user reuse one cheap payment for an expensive order.
+- On verification, look the order up by the provider-returned reference, then check the payment really belongs to it. Do not look the order up by a user-supplied ID and then trust any successful payment the user points you at: that lets a user reuse one cheap payment for an expensive order.
 - A new attempt after a failure should normally get a new reference on the provider side (many providers reject reused references), linked to the same order. Model `order` (1) → `payment_attempt` (many).
 
 ## Redirects and callbacks are not proof
 
-After hosted checkout the customer is sent back to your `success_url`/`callback_url`, often with a reference and a status in the query string. Treat that page as: "show a 'confirming your payment' state, then call your own server, which verifies with the provider." Never mark the order paid from the query string, and never rely on the redirect at all for fulfilment — customers close tabs, lose connectivity, and pay via methods that confirm minutes later. The webhook is the reliable path; the redirect is for user experience.
+After hosted checkout the customer is sent back to your `success_url`/`callback_url`, often with a reference and a status in the query string. Treat that page as: "show a 'confirming your payment' state, then call your own server, which verifies with the provider." Never mark the order paid from the query string, and never rely on the redirect at all for fulfilment: customers close tabs, lose connectivity, and pay via methods that confirm minutes later. The webhook is the reliable path; the redirect is for user experience.
 
 ## Synchronous vs asynchronous confirmation
 
-Some methods confirm instantly (most cards). Many do not: bank transfers, direct debits (SEPA, ACH, BACS), USSD, mobile money (M-Pesa, MTN MoMo), Boleto, OXXO, UPI collect, Pix, vouchers, and cards that need 3-D Secure. For these, "the customer finished the checkout" means "payment is processing", and the final success or failure arrives later — sometimes days later for debits.
+Some methods confirm instantly (most cards). Many do not: bank transfers, direct debits (SEPA, ACH, BACS), USSD, mobile money (M-Pesa, MTN MoMo), Boleto, OXXO, UPI collect, Pix, vouchers, and cards that need 3-D Secure. For these, "the customer finished the checkout" means "payment is processing", and the final success or failure arrives later: sometimes days later for debits.
 
 Consequences:
 
@@ -45,7 +45,7 @@ Consequences:
 
 ## 3-D Secure / SCA
 
-In the EEA, UK, India, and increasingly elsewhere, card payments often require customer authentication. Using the provider's current client SDK (Stripe Payment Element / `confirmPayment`, Adyen Drop-in, Razorpay Checkout) handles the challenge for you. Code that creates and confirms a card charge purely server-side will fail for cards that need authentication. Off-session charges (subscriptions, saved cards) can also require the customer to come back and authenticate — build a path to notify them.
+In the EEA, UK, India, and increasingly elsewhere, card payments often require customer authentication. Using the provider's current client SDK (Stripe Payment Element / `confirmPayment`, Adyen Drop-in, Razorpay Checkout) handles the challenge for you. Code that creates and confirms a card charge purely server-side will fail for cards that need authentication. Off-session charges (subscriptions, saved cards) can also require the customer to come back and authenticate: build a path to notify them.
 
 ## A state machine
 
@@ -70,8 +70,8 @@ This single pattern prevents a whole class of double-fulfilment and out-of-order
 
 ## Expiry and abandonment
 
-Pending orders that never complete should expire — release reserved stock, stop showing them as awaiting payment. Hosted sessions also expire (Stripe Checkout Sessions default to 24h). Handle the expiry event or sweep with a job. A late success for an order you already expired should be handled deliberately (fulfil anyway, or auto-refund), not crash.
+Pending orders that never complete should expire: release reserved stock, stop showing them as awaiting payment. Hosted sessions also expire (Stripe Checkout Sessions default to 24h). Handle the expiry event or sweep with a job. A late success for an order you already expired should be handled deliberately (fulfil anyway, or auto-refund), not crash.
 
 ## Saved payment methods
 
-Use the provider's vaulting (Stripe Customers + PaymentMethods/SetupIntents, Paystack `authorization_code`, Flutterwave tokens, Razorpay tokens, Adyen `storedPaymentMethodId`, PayPal vault). Store only the token and display data (brand, last4, expiry). Charging a saved method later is "off-session" — it can fail or require authentication, so handle that outcome.
+Use the provider's vaulting (Stripe Customers + PaymentMethods/SetupIntents, Paystack `authorization_code`, Flutterwave tokens, Razorpay tokens, Adyen `storedPaymentMethodId`, PayPal vault). Store only the token and display data (brand, last4, expiry). Charging a saved method later is "off-session": it can fail or require authentication, so handle that outcome.

@@ -9,7 +9,7 @@ Payouts are where payment systems lose the most money, because a mistake sends r
 2. Authorize: the user owns the wallet; the destination account belongs to (or was verified by) the user;
    step-up auth (password/OTP/2FA) for new destinations or large amounts.
 3. In one DB transaction:
-     - debit available balance with a conditional update (balance >= amount)  — or move to "held"
+     - debit available balance with a conditional update (balance >= amount), or move to "held"
      - insert payout row: status=pending, unique reference, amount, fee, destination snapshot
 4. Commit, then call the provider transfer API with the unique reference / idempotency key.
 5. Record provider transfer ID and status (often "pending"/"processing", not final).
@@ -29,17 +29,17 @@ Getting step 6 wrong is the most common high-severity bug: a transfer the provid
 
 ## Fees
 
-Decide who pays the transfer fee (user or platform) and record it as its own ledger entry, so `sum(ledger)` still explains every unit of currency. If the fee comes out of the withdrawal, the transfer amount is `amount - fee` — make sure what you send is what you debited.
+Decide who pays the transfer fee (user or platform) and record it as its own ledger entry, so `sum(ledger)` still explains every unit of currency. If the fee comes out of the withdrawal, the transfer amount is `amount - fee`: make sure what you send is what you debited.
 
 ## Provider-side controls
 
-- Some providers require OTP confirmation for transfers by default (Paystack: transfers may need `finalize_transfer` with OTP unless disabled in the dashboard). Automated payouts usually need this turned off — and therefore need strong controls on your side.
+- Some providers require OTP confirmation for transfers by default (Paystack: transfers may need `finalize_transfer` with OTP unless disabled in the dashboard). Automated payouts usually need this turned off, and therefore need strong controls on your side.
 - Keep the payout balance on the provider topped up separately from your collections; a payout failing for insufficient provider balance must be handled (retry later, not "failed forever").
 - Use API-level IP allowlisting for the transfer API where the provider offers it.
 
 ## Admin-initiated payouts
 
-Admin tools that approve withdrawals or move funds need: role checks on the server (not just a hidden button), an audit log (who, what, when, before/after), two-person approval for large amounts, and the same idempotency as user payouts — an admin double-clicking "Approve" must not send twice.
+Admin tools that approve withdrawals or move funds need: role checks on the server (not just a hidden button), an audit log (who, what, when, before/after), two-person approval for large amounts, and the same idempotency as user payouts: an admin double-clicking "Approve" must not send twice.
 
 ## Marketplaces and split payments
 
@@ -55,7 +55,7 @@ Options:
 | PayPal | Multiparty / partner referrals, `payee` and `platform_fees` |
 | Mercado Pago | Marketplace with `marketplace_fee` |
 
-Using the provider's split feature generally keeps you out of holding funds on others' behalf, which in many jurisdictions is a regulated activity (money transmission / e-money / payment institution licences). If the user is building escrow or holding customer funds in their own account to pay out later, flag this as a regulatory question for them to confirm locally — do not assume it's fine.
+Using the provider's split feature generally keeps you out of holding funds on others' behalf, which in many jurisdictions is a regulated activity (money transmission / e-money / payment institution licences). If the user is building escrow or holding customer funds in their own account to pay out later, flag this as a regulatory question for them to confirm locally: do not assume it's fine.
 
 Marketplace checks:
 

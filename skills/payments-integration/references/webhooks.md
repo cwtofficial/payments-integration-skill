@@ -11,7 +11,7 @@ receive raw body
   → process asynchronously (queue/job), inside a DB transaction, idempotently
 ```
 
-If you have no queue, processing inline is acceptable for fast work, as long as the processing itself is idempotent and finishes well within the provider's timeout (often 10–30 seconds; some are shorter). Never call slow third parties (email, PDF generation) inline before responding.
+If you have no queue, processing inline is acceptable for fast work, as long as the processing itself is idempotent and finishes well within the provider's timeout (often 10-30 seconds; some are shorter). Never call slow third parties (email, PDF generation) inline before responding.
 
 ## Raw body: the most common failure
 
@@ -43,11 +43,11 @@ Signatures are computed over the exact bytes the provider sent. If any middlewar
 Details can change; confirm against the provider file and the provider's docs or SDK.
 
 Implementation rules:
-- Compare signatures with a constant-time function (`crypto.timingSafeEqual`, `hmac.compare_digest`, `hash_equals`). Check lengths first in Node — `timingSafeEqual` throws on unequal lengths.
+- Compare signatures with a constant-time function (`crypto.timingSafeEqual`, `hmac.compare_digest`, `hash_equals`). Check lengths first in Node: `timingSafeEqual` throws on unequal lengths.
 - Prefer the official SDK's verify function when one exists.
 - Reject old timestamps when the scheme includes one, to limit replay.
-- IP allowlisting (Paystack, Flutterwave, and others publish IPs) is defence in depth, never a replacement for signatures — and breaks when IPs change.
-- Providers without signed webhooks (some mobile money APIs) — treat the callback as a hint only: re-query the transaction status from the provider API using your credentials before acting, and use an unguessable callback URL.
+- IP allowlisting (Paystack, Flutterwave, and others publish IPs) is defence in depth, never a replacement for signatures, and breaks when IPs change.
+- Providers without signed webhooks (some mobile money APIs): treat the callback as a hint only: re-query the transaction status from the provider API using your credentials before acting, and use an unguessable callback URL.
 
 ## "Verify after webhook" pattern
 
@@ -71,7 +71,7 @@ CREATE TABLE webhook_events (
 );
 ```
 
-Insert with `ON CONFLICT DO NOTHING` and check whether a row was inserted. Event-level dedupe is not enough on its own: two *different* events can describe the same payment (e.g. `checkout.session.completed` and `payment_intent.succeeded`, or a webhook plus a user-triggered verify call). The fulfilment itself must also be idempotent — the conditional state transition and a unique constraint on the payment reference in the ledger.
+Insert with `ON CONFLICT DO NOTHING` and check whether a row was inserted. Event-level dedupe is not enough on its own: two *different* events can describe the same payment (e.g. `checkout.session.completed` and `payment_intent.succeeded`, or a webhook plus a user-triggered verify call). The fulfilment itself must also be idempotent: the conditional state transition and a unique constraint on the payment reference in the ledger.
 
 Some providers (Paystack, Flutterwave) do not put a unique event ID on every payload. Derive one from event type + transaction ID/reference + status.
 
@@ -87,12 +87,12 @@ Webhooks can arrive out of order. `payment_intent.succeeded` can land before `pa
 
 - 2xx only when you have durably recorded the event (or processed it). If your DB write fails, return 5xx so the provider retries.
 - Return 4xx for bad signatures. Do not return 2xx for an unverified request "to stop retries".
-- Do not return 5xx for an event type you don't handle — return 2xx and ignore it, or the provider will retry it forever and may disable your endpoint.
+- Do not return 5xx for an event type you don't handle: return 2xx and ignore it, or the provider will retry it forever and may disable your endpoint.
 - Do not leak error details in the response body.
 
 ## Operational
 
 - Subscribe only to the events you handle.
-- Monitor failures; most dashboards show delivery attempts. Alert when your failure rate rises — some providers disable endpoints after sustained failures.
+- Monitor failures; most dashboards show delivery attempts. Alert when your failure rate rises: some providers disable endpoints after sustained failures.
 - Keep a way to replay: store raw events so a bug fix can reprocess them, and know how to re-send from the provider dashboard or CLI.
 - Separate endpoints or secrets for test and live mode; check the event's livemode/environment flag where present.

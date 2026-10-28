@@ -7,7 +7,7 @@
 - **Idempotency:** send an idempotency key (Stripe, PayPal, Adyen, Square) or a unique reference. A retried refund after a timeout must not refund twice.
 - **Asynchronous:** many refunds are not instant (Stripe refunds can be `pending` and later `failed`; Paystack `refund.pending` → `refund.processed`/`refund.failed`; Razorpay `refund.created` → `refund.processed`/`refund.failed`). Record the refund as pending and finalize on the webhook.
 - **Reverse what the payment granted:** revoke access, return stock, cancel the shipment, debit wallet credits that came from the payment, reverse marketplace transfers and fees as per policy. A refund that leaves the entitlement in place is free money.
-- **Wallet top-up refunds:** if the user already spent the credited balance, the refund must either be blocked or put the wallet negative by policy — decide explicitly.
+- **Wallet top-up refunds:** if the user already spent the credited balance, the refund must either be blocked or put the wallet negative by policy: decide explicitly.
 - **Refund to source:** refunds go back to the original payment method. Refunding a card payment by sending a bank transfer to an account the user names is a common fraud pattern (pay with a stolen card, ask for a refund to their own bank).
 
 ## Disputes / chargebacks
@@ -21,7 +21,7 @@ Handle:
 - Adyen: `CHARGEBACK`, `NOTIFICATION_OF_CHARGEBACK`, `CHARGEBACK_REVERSED`, `SECOND_CHARGEBACK`.
 - Razorpay: `payment.dispute.created`, `payment.dispute.won`, `payment.dispute.lost`, etc.
 
-Actions: flag the order, optionally suspend the related entitlement or account, record the withdrawn funds in the ledger, alert someone, and gather evidence (receipts, delivery proof, logs, IP, customer communication) before the provider's deadline. For wallets: a disputed top-up whose balance was already withdrawn is a direct loss — that is why new-user withdrawal holds exist.
+Actions: flag the order, optionally suspend the related entitlement or account, record the withdrawn funds in the ledger, alert someone, and gather evidence (receipts, delivery proof, logs, IP, customer communication) before the provider's deadline. For wallets: a disputed top-up whose balance was already withdrawn is a direct loss, which is why new-user withdrawal holds exist.
 
 ## Reversals of incoming payments
 

@@ -54,4 +54,4 @@ The happy path almost always works. Test these:
 - renewal webhook delivered twice → access extended / credits added once
 - cancellation → access ends at the right time
 
-Unit-test the pure parts (amount conversion, state transitions, fee calculation, signature verification) and integration-test the handler against a real database — idempotency and race bugs live in the database interaction and won't show up with mocked repositories.
+Unit-test the pure parts (amount conversion, state transitions, fee calculation, signature verification) and integration-test the handler against a real database: idempotency and race bugs live in the database interaction and won't show up with mocked repositories.

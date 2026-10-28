@@ -19,7 +19,7 @@ Docs: https://developers.monnify.com.
 - Init: `POST /api/v1/merchant/transactions/init-transaction` with `amount`, `paymentReference` (yours, unique), `contractCode`, `redirectUrl`, customer details → `checkoutUrl`, `transactionReference`.
 - Verify: `GET /api/v2/transactions/{transactionReference}` (URL-encode it) → `paymentStatus` (`PAID`, `PENDING`, `OVERPAID`, `PARTIALLY_PAID`, `EXPIRED`, `FAILED`...), `amountPaid`, `paymentReference`.
 - Webhook signature: header `monnify-signature` = HMAC-SHA512 (hex) of the raw body with your **client secret key**.
-- Reserved accounts (virtual accounts for wallet funding): customers can transfer any amount — credit `amountPaid` (or settlement amount per your fee policy), idempotent on `transactionReference`. Handle `OVERPAID`/`PARTIALLY_PAID` explicitly for invoice-style flows.
+- Reserved accounts (virtual accounts for wallet funding): customers can transfer any amount: credit `amountPaid` (or settlement amount per your fee policy), idempotent on `transactionReference`. Handle `OVERPAID`/`PARTIALLY_PAID` explicitly for invoice-style flows.
 - Disbursements: `POST /api/v2/disbursements/single` with unique `reference`; may require OTP authorization unless disabled; final status via webhook or `GET /api/v2/disbursements/single/summary?reference=…`. Restore balance on failure/reversal.
 
 ## M-Pesa Daraja (Kenya, Safaricom)
@@ -28,9 +28,9 @@ Docs: https://developer.safaricom.co.ke.
 - Amounts are **whole KES integers**.
 - STK Push (Lipa na M-Pesa Online): `POST /mpesa/stkpush/v1/processrequest` with `BusinessShortCode`, `Password = base64(Shortcode + Passkey + Timestamp)`, `Timestamp` (`YYYYMMDDHHmmss`), `TransactionType`, `Amount`, `PartyA` (phone), `PartyB`, `PhoneNumber`, `CallBackURL`, `AccountReference`, `TransactionDesc` → `CheckoutRequestID`, `MerchantRequestID`. Store `CheckoutRequestID` on your payment row.
 - Callback: `Body.stkCallback.ResultCode` (0 = success), `CallbackMetadata.Item` with `Amount`, `MpesaReceiptNumber`, `PhoneNumber`. **Callbacks are not signed.** Use a hard-to-guess callback path, optionally IP allowlist Safaricom's ranges, match on `CheckoutRequestID`, check amount, and confirm via STK Push Query (`/mpesa/stkpushquery/v1/query`) before crediting. Dedupe on `MpesaReceiptNumber`.
-- Callbacks may never arrive (user ignored prompt, timeouts) — sweep pending requests with the query API.
+- Callbacks may never arrive (user ignored prompt, timeouts): sweep pending requests with the query API.
 - C2B (paybill/till): register validation and confirmation URLs; confirmation is the payment notification.
-- B2C (payouts): `ResultURL` and `QueueTimeOutURL` callbacks; a timeout does not mean failure — query transaction status before retrying, or you may pay twice.
+- B2C (payouts): `ResultURL` and `QueueTimeOutURL` callbacks; a timeout does not mean failure: query transaction status before retrying, or you may pay twice.
 
 ## Mollie (Europe)
 Docs: https://docs.mollie.com.
@@ -53,12 +53,12 @@ Docs: https://www.checkout.com/docs.
 
 ## Paddle and Lemon Squeezy (merchant of record)
 They are the seller of record: they collect and remit sales tax/VAT and handle invoicing. Good fit for SaaS selling globally; the trade-off is higher fees and less control.
-- **Paddle Billing**: webhook header `Paddle-Signature: ts=<ts>;h1=<hex>`, HMAC-SHA256 of `"{ts}:{raw_body}"` with the notification destination's secret. Events like `transaction.completed`, `subscription.created`/`updated`/`canceled`. Use `custom_data` to link to your user. Paddle Classic is different (public-key signature) — check which one the project uses.
+- **Paddle Billing**: webhook header `Paddle-Signature: ts=<ts>;h1=<hex>`, HMAC-SHA256 of `"{ts}:{raw_body}"` with the notification destination's secret. Events like `transaction.completed`, `subscription.created`/`updated`/`canceled`. Use `custom_data` to link to your user. Paddle Classic is different (public-key signature): check which one the project uses.
 - **Lemon Squeezy**: header `X-Signature` = HMAC-SHA256 (hex) of the raw body with the signing secret. Events `order_created`, `subscription_created`, `subscription_updated`, `subscription_payment_success`, `subscription_cancelled`, `order_refunded`. Pass your user ID in `checkout_data.custom` → `meta.custom_data`.
 
 ## Xendit (Indonesia, Philippines, and SEA)
 Docs: https://docs.xendit.co.
-- Callbacks carry `x-callback-token` header equal to the verification token in your dashboard — a shared secret, not a body signature. Compare in constant time and re-fetch the object (invoice/payment) via API before acting.
+- Callbacks carry `x-callback-token` header equal to the verification token in your dashboard: a shared secret, not a body signature. Compare in constant time and re-fetch the object (invoice/payment) via API before acting.
 - Amounts in major units for IDR/PHP (IDR has no decimals in practice). Invoices have statuses `PENDING`, `PAID`, `SETTLED`, `EXPIRED`.
 - `Idempotency-key` header (exact casing per docs) on create endpoints; disbursements use unique `external_id`.
 

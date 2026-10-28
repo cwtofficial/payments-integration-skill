@@ -35,7 +35,7 @@ Concrete defect patterns, grouped by area. For each, the "confirm" line says how
 ## Webhooks (WHK)
 
 - **WHK-1 No signature verification.** Handler parses body and acts. *Confirm:* no HMAC/SDK verify call before state changes. Critical.
-- **WHK-2 Verification on parsed/re-serialized body.** `JSON.stringify(req.body)` passed to HMAC. Usually causes failures (so it gets "fixed" by disabling verification) — check for disabled or try/catch-swallowed verification. High.
+- **WHK-2 Verification on parsed/re-serialized body.** `JSON.stringify(req.body)` passed to HMAC. Usually causes failures (so it gets "fixed" by disabling verification): check for disabled or try/catch-swallowed verification. High.
 - **WHK-3 Verification failure not enforced.** Verify result logged but processing continues, or exception caught and ignored. Critical.
 - **WHK-4 Non-constant-time comparison** (`===` on signatures). Low (practical exploitation is hard), but trivial to fix.
 - **WHK-5 Wrong secret type.** Using API secret where webhook secret is required (Razorpay) or vice versa; works in one env, fails in another. Medium.
@@ -46,7 +46,7 @@ Concrete defect patterns, grouped by area. For each, the "confirm" line says how
 ## Idempotency and concurrency (IDM)
 
 - **IDM-1 No dedupe on webhook events or payment reference.** Same event processed twice credits twice. *Confirm:* no unique constraint on event ID / payment reference in the fulfilment path; a status check in app code alone does not count. High.
-- **IDM-2 Check-then-act race.** `if (order.status !== 'paid') { credit(); order.status = 'paid'; save() }` — webhook and verify call (or two webhook deliveries) running concurrently both pass. *Confirm:* the check and the write are separate statements without a lock/conditional update. High.
+- **IDM-2 Check-then-act race.** `if (order.status !== 'paid') { credit(); order.status = 'paid'; save() }`: webhook and verify call (or two webhook deliveries) running concurrently both pass. *Confirm:* the check and the write are separate statements without a lock/conditional update. High.
 - **IDM-3 No outbound idempotency key** on charge/refund/transfer creation that is retried (by code, by a job, or by user double-click). High for transfers/refunds.
 - **IDM-4 Idempotency key regenerated per retry.** Medium.
 - **IDM-5 Ledger write and status change in separate transactions.** Crash between them leaves inconsistent state. Medium.
@@ -67,20 +67,20 @@ Concrete defect patterns, grouped by area. For each, the "confirm" line says how
 - **PAY-4 Amount validation missing.** Negative, zero, fractional, above-balance, or above-limit withdrawals accepted. Negative withdrawals are often a credit. Critical.
 - **PAY-5 Destination not owned/verified.** Can withdraw to any account number in the request; or change destination without re-auth. Critical/High.
 - **PAY-6 Admin approval without server-side role check or idempotency.** High.
-- **PAY-7 Fee not accounted** — sent amount ≠ debited amount and difference not recorded. Medium.
+- **PAY-7 Fee not accounted**: sent amount ≠ debited amount and difference not recorded. Medium.
 
 ## Refunds and disputes (REF)
 
-- **REF-1 Over-refund possible** — no cap at the original amount, or racy partial refunds. High.
+- **REF-1 Over-refund possible**: no cap at the original amount, or racy partial refunds. High.
 - **REF-2 Refund doesn't revoke entitlement/credits.** High.
 - **REF-3 Refund to arbitrary destination** instead of original method. High.
-- **REF-4 Disputes unhandled** — no record, no alert, no account action. Medium.
+- **REF-4 Disputes unhandled**: no record, no alert, no account action. Medium.
 
 ## Subscriptions (SUB)
 
 - **SUB-1 Access granted on checkout redirect.** Critical (same as CNF-1).
-- **SUB-2 Access never revoked** — only "created/paid" events handled. High.
-- **SUB-3 Renewal not idempotent** — double credits on retried `invoice.paid`/`charge.success`. High.
+- **SUB-2 Access never revoked**: only "created/paid" events handled. High.
+- **SUB-3 Renewal not idempotent**: double credits on retried `invoice.paid`/`charge.success`. High.
 - **SUB-4 Upgrade before payment.** Medium.
 - **SUB-5 Out-of-order updates overwrite newer state.** Medium.
 - **SUB-6 Duplicate subscriptions per user.** Medium.
@@ -94,11 +94,11 @@ Concrete defect patterns, grouped by area. For each, the "confirm" line says how
 
 ## Authorization (AUTHZ)
 
-- **AUTHZ-1 IDOR on payment resources** — verify/refund/withdraw/view endpoints accept an ID without ownership check. High/Critical.
+- **AUTHZ-1 IDOR on payment resources**: verify/refund/withdraw/view endpoints accept an ID without ownership check. High/Critical.
 - **AUTHZ-2 Admin payment endpoints protected only in the UI.** Critical.
 
 ## Operations (OPS)
 
 - **OPS-1 No reconciliation or stuck-payment sweep.** Medium.
-- **OPS-2 No storage of raw webhook events** — can't replay after a bug. Low.
+- **OPS-2 No storage of raw webhook events**: can't replay after a bug. Low.
 - **OPS-3 No alerting on webhook failures.** Low.

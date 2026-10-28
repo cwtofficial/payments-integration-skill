@@ -6,7 +6,7 @@ Stripe Billing, Paystack Plans/Subscriptions, Flutterwave Payment Plans, Razorpa
 
 ## The source of truth for access
 
-Your app needs a local `subscriptions` record with: provider subscription ID, customer, plan/price, status, `current_period_end`, `cancel_at_period_end`, and the last event timestamp applied. Grant access from this local record, updated by webhooks — not by calling the provider on every request, and not by the checkout success redirect.
+Your app needs a local `subscriptions` record with: provider subscription ID, customer, plan/price, status, `current_period_end`, `cancel_at_period_end`, and the last event timestamp applied. Grant access from this local record, updated by webhooks, not by calling the provider on every request, and not by the checkout success redirect.
 
 Access rule that survives most edge cases: **access is allowed while `status` is in an allowed set and `now < current_period_end` (plus an optional grace period).** Decide explicitly which statuses keep access (e.g. Stripe `active`, `trialing`, and possibly `past_due` during dunning).
 
@@ -27,13 +27,13 @@ Paystack: `subscription.create`, `charge.success` (renewals), `invoice.create`, 
 ## Common subscription bugs
 
 - **Granting access on signup but never revoking it** because only the "created" event is handled.
-- **Two subscriptions for one user** — double click on subscribe, or no check for an existing active subscription. Check before creating and use idempotency keys.
+- **Two subscriptions for one user**: double click on subscribe, or no check for an existing active subscription. Check before creating and use idempotency keys.
 - **Renewal credits as a new purchase** in a credits-based model, without idempotency on the invoice ID → double credits on retried webhooks.
-- **Plan change applied before payment** — upgrading the user's tier when the upgrade invoice hasn't been paid.
+- **Plan change applied before payment**: upgrading the user's tier when the upgrade invoice hasn't been paid.
 - **Out-of-order `updated` events** overwriting a newer state with an older snapshot.
-- **Trial abuse** — unlimited trials by re-registering; tie trials to a payment method fingerprint or verified identity if that matters to the business.
-- **Cancellation semantics** — "cancel" usually should mean cancel at period end (the customer paid for the period). Immediate cancellation may require a prorated refund; be explicit.
-- **Price changes** — existing subscribers stay on their old price unless migrated; changing a price object in place is often impossible or surprising.
+- **Trial abuse**: unlimited trials by re-registering; tie trials to a payment method fingerprint or verified identity if that matters to the business.
+- **Cancellation semantics**: "cancel" usually should mean cancel at period end (the customer paid for the period). Immediate cancellation may require a prorated refund; be explicit.
+- **Price changes**: existing subscribers stay on their old price unless migrated; changing a price object in place is often impossible or surprising.
 
 ## Proration and plan changes
 

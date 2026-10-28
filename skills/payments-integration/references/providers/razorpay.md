@@ -1,6 +1,6 @@
 # Razorpay
 
-Docs: https://razorpay.com/docs — API: https://razorpay.com/docs/api. India-focused (cards, UPI, netbanking, wallets, EMI); also Malaysia and international cards.
+Docs: https://razorpay.com/docs. API: https://razorpay.com/docs/api. India-focused (cards, UPI, netbanking, wallets, EMI); also Malaysia and international cards.
 
 ## Keys
 `key_id` (`rzp_test_…`/`rzp_live_…`, safe for client) and `key_secret` (server). Basic auth with `key_id:key_secret`. Webhook secret is **separate**, set per webhook in the dashboard.
@@ -30,11 +30,11 @@ const expected = crypto.createHmac('sha256', RAZORPAY_KEY_SECRET)
 // AND check razorpay_order_id === the order ID you stored for this dbOrder
 ```
 
-The checkout signature proves the payment ID belongs to that order ID — it does not by itself prove capture. For fulfilment, rely on `payment.captured` / `order.paid` webhooks, or fetch the payment (`GET /payments/:id`) and check `status === 'captured'`, `amount`, `currency`, `order_id`.
+The checkout signature proves the payment ID belongs to that order ID: it does not by itself prove capture. For fulfilment, rely on `payment.captured` / `order.paid` webhooks, or fetch the payment (`GET /payments/:id`) and check `status === 'captured'`, `amount`, `currency`, `order_id`.
 
 ## Webhooks
 - Header `X-Razorpay-Signature`: HMAC-SHA256 (hex) of the raw body with the **webhook secret**. SDK: `Razorpay.validateWebhookSignature(rawBody, signature, secret)`.
-- Header `x-razorpay-event-id` is unique per event — dedupe on it.
+- Header `x-razorpay-event-id` is unique per event: dedupe on it.
 - Retries on non-2xx for up to 24 hours; webhooks can be disabled after sustained failures.
 - Key events: `payment.authorized`, `payment.captured`, `payment.failed`, `order.paid`, `refund.created`/`refund.processed`/`refund.failed`, `payment.dispute.*`, `subscription.*`, `payout.*` (RazorpayX), `transfer.*` (Route).
 

@@ -16,7 +16,7 @@ Access token (server), application ID and location ID (client, Web Payments SDK)
 
 ## Webhooks
 - Header `x-square-hmacsha256-signature`: base64 HMAC-SHA256 of `notification_url + raw_body` with the subscription's signature key. The URL must be exactly the one registered (scheme, host, path, query). SDK helper: `WebhooksHelper.isValidWebhookEventSignature(body, signature, signatureKey, notificationUrl)`.
-- `event_id` is unique — dedupe on it.
+- `event_id` is unique: dedupe on it.
 - Key events: `payment.created`, `payment.updated`, `refund.created`, `refund.updated`, `dispute.created`, `dispute.state.updated`, `subscription.*`, `invoice.*`, `order.updated`.
 
 ## Refunds
