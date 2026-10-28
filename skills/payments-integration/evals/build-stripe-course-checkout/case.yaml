@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: build-stripe-course-checkout
+expected_outcome: |
+  Working Next.js App Router + Prisma code: a checkout route that creates a Stripe Checkout Session
+  using the price from the database (not the request), a webhook route that verifies the signature
+  over the raw body (req.text()), makes fulfilment idempotent with a unique constraint,
+  grants access only when payment_status is paid and handles async_payment_succeeded/failed for SEPA,
+  and does not grant access on the success redirect. Includes a short test plan.

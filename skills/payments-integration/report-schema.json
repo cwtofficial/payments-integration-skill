@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/cwtofficial/skills/payments-integration/report-schema.json",
+  "title": "Payments audit findings",
+  "type": "object",
+  "required": ["project", "summary", "money_paths", "findings"],
+  "additionalProperties": false,
+  "properties": {
+    "project": { "type": "string", "minLength": 1 },
+    "summary": { "type": "string", "minLength": 1 },
+    "providers": { "type": "array", "items": { "type": "string" } },
+    "money_paths": {
+      "type": "array",
+      "description": "Every money path that was reviewed, so the reader knows what is covered.",
+      "items": {
+        "type": "object",
+        "required": ["name", "entry"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "entry": { "type": "string", "minLength": 1, "description": "path/to/file or path/to/file:line" }
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "description": "Most severe first.",
+      "items": {
+        "type": "object",
+        "required": ["id", "severity", "title", "location", "what", "scenario", "fix"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^F-[0-9]+$" },
+          "severity": { "enum": ["critical", "high", "medium", "low"] },
+          "title": { "type": "string", "minLength": 1, "maxLength": 120 },
+          "pattern": { "type": "string", "pattern": "^(AMT|CNF|WHK|IDM|LDG|PAY|REF|SUB|SEC|AUTHZ|OPS)-[0-9]+$", "description": "ID from references/audit-checklist.md" },
+          "location": {
+            "type": "object",
+            "required": ["file", "line"],
+            "additionalProperties": false,
+            "properties": {
+              "file": { "type": "string", "minLength": 1 },
+              "line": { "type": "integer", "minimum": 1 },
+              "end_line": { "type": "integer", "minimum": 1 }
+            }
+          },
+          "what": { "type": "string", "minLength": 1 },
+          "scenario": { "type": "string", "minLength": 20, "description": "Concrete steps leading to a concrete loss." },
+          "fix": { "type": "string", "minLength": 1 },
+          "confidence": { "enum": ["confirmed", "likely"] }
+        }
+      }
+    },
+    "open_questions": { "type": "array", "items": { "type": "string" } },
+    "strengths": { "type": "array", "items": { "type": "string" } }
+  }
+}

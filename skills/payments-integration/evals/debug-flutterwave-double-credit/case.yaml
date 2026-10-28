@@ -1,0 +1,10 @@
+schema_version: "1.1"
+name: debug-flutterwave-double-credit
+expected_outcome: |
+  Identifies the check-then-act race (status read, then credit, then status write as separate
+  non-atomic steps) between the webhook and the redirect callback (or duplicate deliveries), and fixes
+  it with an atomic conditional update or unique constraint inside a transaction that also
+  writes the credit. Also notices the handler does not check amount/currency/tx_ref of the verified
+  transaction and that charge.completed does not imply success.
+context:
+  scaffold_script: place-files.sh

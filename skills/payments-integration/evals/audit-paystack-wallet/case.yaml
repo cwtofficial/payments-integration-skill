@@ -1,0 +1,10 @@
+schema_version: "1.1"
+name: audit-paystack-wallet
+expected_outcome: |
+  audit.md is a ranked findings report that identifies the planted defects with file and line:
+  the webhook hashes JSON.stringify(req.body) instead of the raw body, the callback route credits
+  the wallet from the redirect path, verify checks status but not amount, there is no idempotency on
+  charge.success, the withdrawal checks balance in application code before debiting (race), negative
+  amounts are accepted, transfer.failed/transfer.reversed are not handled, and money is stored as floats.
+context:
+  scaffold_script: place-files.sh
