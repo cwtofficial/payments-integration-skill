@@ -1,6 +1,6 @@
 # Payments Integration Skill
 
-Agent skills from [Create With Tech](https://github.com/cwtofficial) for Claude Code and other agents that support the [Agent Skills](https://docs.claude.com/en/docs/agents-and-tools/agent-skills/overview) format.
+An agent skill from [Create With Tech](https://cwt.build) for Claude Code and other agents that support the [Agent Skills](https://docs.claude.com/en/docs/agents-and-tools/agent-skills/overview) format.
 
 ## Skills
 
@@ -39,6 +39,10 @@ node --test skills/payments-integration/scripts/scripts.test.cjs
 ## Contributing
 
 Provider APIs change. If you find a detail that is wrong or out of date, open a PR with a link to the provider's current documentation. New provider files are welcome — follow the shape of `references/providers/paystack.md` and answer the seven questions at the end of `references/providers/others.md`.
+
+## About
+
+Built and maintained by [Create With Tech](https://cwt.build) — [cwt.build](https://cwt.build) · [GitHub](https://github.com/cwtofficial).
 
 ## License
 
